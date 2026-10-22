@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goldilocks and the Three Bears — Picture Match</title>
+  <style>
+    :root {
+      --ink: #493b35;
+      --pink: #f7c9d4;
+      --pink-dark: #d96f8e;
+      --cream: #fff9ee;
+      --yellow: #ffe9a8;
+      --mint: #d8eee2;
+      --lavender: #e6ddf6;
+      --white: #fff;
+      --shadow: 0 8px 22px rgba(91, 65, 62, .12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 10%, #fff 0 4px, transparent 5px),
+        radial-gradient(circle at 90% 25%, #fff 0 5px, transparent 6px),
+        linear-gradient(135deg, #fff3f4, #fff9e9 55%, #edf8f0);
+      background-size: 80px 80px, 110px 110px, auto;
+    }
+    .page { width: min(1080px, 100%); margin: auto; padding: 28px 18px 42px; }
+    header { text-align: center; margin-bottom: 20px; }
+    .eyebrow { font-size: .78rem; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; color: #ad6680; }
+    h1 { font-size: clamp(2rem, 5vw, 3.3rem); line-height: 1.05; margin: 10px 0 8px; }
+    .subtitle { margin: 0 auto; max-width: 640px; font-size: 1.05rem; line-height: 1.5; }
+    .instructions {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: rgba(255,255,255,.8); border: 2px dashed #eab1c1; border-radius: 18px;
+      padding: 13px 16px; margin: 22px auto; max-width: 760px; line-height: 1.4;
+    }
+    .instructions .star { font-size: 1.6rem; }
+    .toolbar { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+    .stat {
+      background: white; border-radius: 999px; padding: 10px 16px; font-weight: 800;
+      box-shadow: 0 3px 10px rgba(91,65,62,.08);
+    }
+    button { font: inherit; cursor: pointer; }
+    .reset {
+      border: 0; border-radius: 999px; padding: 11px 18px; font-weight: 900;
+      background: var(--pink-dark); color: white; box-shadow: 0 4px 0 #b65372;
+      transition: transform .12s ease;
+    }
+    .reset:hover { transform: translateY(-2px); }
+    .reset:active { transform: translateY(2px); box-shadow: 0 2px 0 #b65372; }
+    .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+    .panel { background: rgba(255,255,255,.74); border: 2px solid rgba(255,255,255,.9); border-radius: 24px; padding: 18px; box-shadow: var(--shadow); }
+    .panel h2 { text-align: center; margin: 0 0 14px; font-size: 1.25rem; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .card {
+      position: relative; min-height: 138px; border: 3px solid transparent; border-radius: 18px;
+      padding: 12px 8px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      gap: 7px; text-align: center; background: var(--cream); color: var(--ink);
+      box-shadow: 0 4px 0 rgba(73,59,53,.08); transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .card:hover:not(:disabled) { transform: translateY(-3px); }
+    .picture { font-size: clamp(2.6rem, 5vw, 3.7rem); line-height: 1.1; filter: drop-shadow(0 3px 0 rgba(0,0,0,.04)); }
+    .card .hint { font-size: .75rem; color: #8a7770; font-weight: 700; }
+    .word-card { min-height: 138px; background: #f4efff; font-size: 1.12rem; font-weight: 900; overflow-wrap: anywhere; }
+    .word-card:nth-child(3n+2) { background: #eaf7ef; }
+    .word-card:nth-child(3n) { background: #fff0d6; }
+    .card.selected { border-color: #b58de7; background: #f3eaff; }
+    .card.matched { border-color: #70b98c; background: #e1f5e8; cursor: default; }
+    .card.wrong { border-color: #e68b9e; animation: shake .28s ease; }
+    .card:disabled { opacity: .86; }
+    .card:focus-visible, .reset:focus-visible { outline: 4px solid #5741a5; outline-offset: 3px; }
+    .status { min-height: 54px; margin: 18px auto 0; max-width: 700px; text-align: center; font-weight: 800; font-size: 1.05rem; line-height: 1.45; }
+    .status.good { color: #277548; }
+    .status.try { color: #a44b65; }
+    .finish { display: none; text-align: center; margin: 12px auto 0; padding: 15px; max-width: 650px; border-radius: 18px; background: #fff0b9; font-weight: 900; }
+    .finish.show { display: block; }
+    .footer-note { text-align: center; font-size: .85rem; margin-top: 22px; color: #826f67; }
+    @keyframes shake { 25%, 75% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }
+    @media (max-width: 640px) {
+      .page { padding: 22px 12px 32px; }
+      .columns { grid-template-columns: 1fr; gap: 14px; }
+      .panel { padding: 14px; }
+      .card, .word-card { min-height: 116px; }
+      .instructions { align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">A little pre-reading adventure</div>
+      <h1>Goldilocks <span aria-hidden="true">🌼</span><br>and the Three Bears</h1>
+      <p class="subtitle">Let's learn some story words before we read!</p>
+    </header>
+
+    <div class="instructions">
+      <span class="star" aria-hidden="true">✨</span>
+      <div><strong>How to play:</strong> Click a picture, then click the matching English word. Find all 8 pairs!</div>
+    </div>
+
+    <div class="toolbar" aria-label="Game progress">
+      <div class="stat">Pairs: <span id="pairs">0</span> / 8</div>
+      <div class="stat">Tries: <span id="tries">0</span></div>
+      <button class="reset" id="restart" type="button">↻ Play again</button>
+    </div>
+
+    <section class="columns" aria-label="Matching game">
+      <div class="panel">
+        <h2>🖼️ Pictures</h2>
+        <div class="cards" id="pictureCards"></div>
+      </div>
+      <div class="panel">
+        <h2>🔤 Words</h2>
+        <div class="cards" id="wordCards"></div>
+      </div>
+    </section>
+
+    <div class="status" id="status" role="status" aria-live="polite">Choose a picture to get started!</div>
+    <div class="finish" id="finish" role="status">🎉 Hooray! You matched every word! You are ready to read the story! 📚</div>
+    <p class="footer-note">Look carefully, say each word aloud, and have fun! 🐻</p>
+  </main>
+
+  <script>
+    const vocabulary = [
+      { word: "Goldilocks", picture: "👧", hint: "a girl" },
+      { word: "bear", picture: "🐻", hint: "an animal" },
+      { word: "porridge", picture: "🥣", hint: "a warm meal" },
+      { word: "bowl", picture: "🍲", hint: "for food" },
+      { word: "chair", picture: "🪑", hint: "for sitting" },
+      { word: "bed", picture: "🛏️", hint: "for sleeping" },
+      { word: "house", picture: "🏡", hint: "a place to live" },
+      { word: "forest", picture: "🌲", hint: "many trees" }
+    ];
+
+    const pictureCards = document.getElementById("pictureCards");
+    const wordCards = document.getElementById("wordCards");
+    const status = document.getElementById("status");
+    const finish = document.getElementById("finish");
+    const pairsLabel = document.getElementById("pairs");
+    const triesLabel = document.getElementById("tries");
+
+    let selectedPicture = null;
+    let selectedWord = null;
+    let matched = new Set();
+    let tries = 0;
+    let locked = false;
+
+    function shuffle(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function makeCard(className, item, side) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `card ${className}`;
+      button.dataset.word = item.word;
+      button.setAttribute("aria-label", side === "picture" ? `Picture: ${item.hint}` : `Word: ${item.word}`);
+      if (side === "picture") {
+        button.innerHTML = `<span class="picture" aria-hidden="true">${item.picture}</span><span class="hint">${item.hint}</span>`;
+        button.addEventListener("click", () => choosePicture(button));
+      } else {
+        button.textContent = item.word;
+        button.addEventListener("click", () => chooseWord(button));
+      }
+      return button;
+    }
+
+    function drawBoard() {
+      pictureCards.innerHTML = "";
+      wordCards.innerHTML = "";
+      shuffle(vocabulary).forEach(item => pictureCards.appendChild(makeCard("picture-card", item, "picture")));
+      shuffle(vocabulary).forEach(item => wordCards.appendChild(makeCard("word-card", item, "word")));
+    }
+
+    function choosePicture(card) {
+      if (locked || matched.has(card.dataset.word)) return;
+      if (selectedPicture) selectedPicture.classList.remove("selected");
+      selectedPicture = card;
+      card.classList.add("selected");
+      status.className = "status";
+      status.textContent = "Great! Now choose the matching word.";
+      checkPair();
+    }
+
+    function chooseWord(card) {
+      if (locked || matched.has(card.dataset.word)) return;
+      if (selectedWord) selectedWord.classList.remove("selected");
+      selectedWord = card;
+      card.classList.add("selected");
+      status.className = "status";
+      status.textContent = selectedPicture ? "Let's see if they match!" : "Now choose the picture that matches this word.";
+      checkPair();
+    }
+
+    function checkPair() {
+      if (!selectedPicture || !selectedWord) return;
+      tries++;
+      triesLabel.textContent = tries;
+      const isMatch = selectedPicture.dataset.word === selectedWord.dataset.word;
+      if (isMatch) {
+        const word = selectedPicture.dataset.word;
+        matched.add(word);
+        selectedPicture.classList.remove("selected");
+        selectedWord.classList.remove("selected");
+        selectedPicture.classList.add("matched");
+        selectedWord.classList.add("matched");
+        selectedPicture.disabled = true;
+        selectedWord.disabled = true;
+        selectedPicture.setAttribute("aria-label", `Matched picture: ${word}`);
+        selectedWord.setAttribute("aria-label", `Matched word: ${word}`);
+        status.className = "status good";
+        status.textContent = `⭐ That's right! ${word}!`;
+        pairsLabel.textContent = matched.size;
+        selectedPicture = null;
+        selectedWord = null;
+        if (matched.size === vocabulary.length) finish.classList.add("show");
+      } else {
+        locked = true;
+        selectedPicture.classList.add("wrong");
+        selectedWord.classList.add("wrong");
+        status.className = "status try";
+        status.textContent = "Not a match yet. Try again! 💪";
+        const oldPicture = selectedPicture;
+        const oldWord = selectedWord;
+        window.setTimeout(() => {
+          oldPicture.classList.remove("selected", "wrong");
+          oldWord.classList.remove("selected", "wrong");
+          selectedPicture = null;
+          selectedWord = null;
+          locked = false;
+          status.className = "status";
+          status.textContent = "Choose a picture, then find its word.";
+        }, 650);
+      }
+    }
+
+    function restartGame() {
+      selectedPicture = null;
+      selectedWord = null;
+      matched = new Set();
+      tries = 0;
+      locked = false;
+      pairsLabel.textContent = "0";
+      triesLabel.textContent = "0";
+      status.className = "status";
+      status.textContent = "Choose a picture to get started!";
+      finish.classList.remove("show");
+      drawBoard();
+    }
+
+    document.getElementById("restart").addEventListener("click", restartGame);
+    drawBoard();
+  </script>
+</body>
+</html>
